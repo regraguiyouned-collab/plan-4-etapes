@@ -143,8 +143,16 @@ details.plus-temps.plat > summary{display:none}
 .d-etapes li + li{border-top:1px dashed #E3D6C8}
 .d-etapes li::before{content:counter(e);flex:none;width:30px;height:30px;border-radius:50%;background:var(--rose-pale);color:var(--rouge);font-family:var(--f-titre);font-size:18px;display:flex;align-items:center;justify-content:center}
 .d-go{max-width:460px;margin-left:auto;margin-right:auto}
+.d-form{max-width:460px;margin:20px auto 16px;display:flex;flex-direction:column;gap:12px}
+.d-champ{display:flex;flex-direction:column;gap:6px;font-weight:800;font-size:16px;color:var(--encre)}
+.d-champ input{font:inherit;font-weight:600;font-size:17px;padding:14px 16px;border:2px solid var(--bord);border-radius:14px;background:#fff;color:var(--encre);width:100%}
+.d-champ input::placeholder{color:#9A8F87;font-weight:500}
+.d-champ input:focus{outline:none;border-color:var(--rouge);box-shadow:0 0 0 3px rgba(255,56,92,.15)}
+.d-champ input.ko{border-color:var(--rouge);background:#FFF5F6}
+.d-erreur{margin:0;color:#C4123A;font-weight:800;font-size:15px}
+.d-erreur[hidden]{display:none}
 .d-note{margin:12px auto 0;max-width:460px;text-align:center;font-size:16px;line-height:1.4;color:#3D3439;letter-spacing:.1px}
-@media (max-width:899px){ .d-go{margin-left:0;margin-right:0} .d-note{margin-left:0;margin-right:0} .d-etapes{margin-left:0;margin-right:0} }
+@media (max-width:899px){ .d-go{margin-left:0;margin-right:0} .d-form{margin-left:0;margin-right:0} .d-note{margin-left:0;margin-right:0} .d-etapes{margin-left:0;margin-right:0} }
 .r-refaire-wrap{text-align:center;margin:18px 0 0}
 .r-refaire{background:none;border:0;padding:10px 6px;min-height:44px;color:var(--gris);font-weight:700;font-size:16px;text-decoration:underline;text-underline-offset:3px}
 .r-refaire:hover{color:var(--encre)}
@@ -207,6 +215,15 @@ details.plus-temps.plat > summary{display:none}
   <section class="vue depart" id="vueDepart">
     <h1>Vivre de la conciergerie : ton plan en 4 étapes</h1>
     <p class="intro muted">Du premier repérage à ton premier rendez-vous avec un propriétaire, à côté de ton travail.</p>
+    <div class="d-form">
+      <label class="d-champ" for="dMail">Ton mail
+        <input type="email" id="dMail" name="email" autocomplete="email" inputmode="email" placeholder="prenom@exemple.fr" required>
+      </label>
+      <label class="d-champ" for="dTel">Ton numéro de téléphone
+        <input type="tel" id="dTel" name="tel" autocomplete="tel" inputmode="tel" placeholder="06 12 34 56 78" required>
+      </label>
+      <p class="d-erreur" id="dErreur" role="alert" hidden>Indique ton mail et ton numéro pour commencer.</p>
+    </div>
     <button type="button" class="btn-main d-go" id="dGo">Commencer</button>
     <p class="d-note">Réponds à 4 questions, ça prend 1&nbsp;minute.</p>
     <ol class="d-etapes">
@@ -571,6 +588,11 @@ function quandElleAFini(reponses){
     });
   } catch(e){}
 }
+/* BRANCHEMENT (phase 2) : son mail et son numéro, donnés avant le quiz.
+   Envoyés au Google Sheet (seulement si l'adresse contient ?id=…). */
+function quandElleDonneSesInfos(mail, telephone){
+  try { envoyer({ mail: mail, telephone: telephone }); } catch(e){}
+}
 /* =============================================== */
 
 (function(){
@@ -704,7 +726,7 @@ function quandElleAFini(reponses){
       const aEffacer = [];
       for(let i = 0; i < localStorage.length; i++){
         const k = localStorage.key(i);
-        if(k && k.indexOf("ca-plan-") === 0 && k !== "ca-plan-id") aEffacer.push(k);
+        if(k && k.indexOf("ca-plan-") === 0 && k !== "ca-plan-id" && k !== "ca-plan-contact") aEffacer.push(k);
       }
       aEffacer.forEach(k => localStorage.removeItem(k));
     } catch(e){}
@@ -714,7 +736,21 @@ function quandElleAFini(reponses){
     window.scrollTo(0, 0);
   };
 
+  /* --- mail et numéro avant le quiz --- */
+  const CLE_CONTACT = "ca-plan-contact";
+  const dMail = $("dMail"), dTel = $("dTel"), dErreur = $("dErreur");
+  try { const c = JSON.parse(localStorage.getItem(CLE_CONTACT) || "null"); if(c){ dMail.value = c.mail || ""; dTel.value = c.telephone || ""; } } catch(e){}
+  const mailOk = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+  const telOk = v => (v.replace(/[^0-9]/g, "").length >= 9);
+  [dMail, dTel].forEach(el => el.addEventListener("input", () => { el.classList.remove("ko"); if(mailOk(dMail.value.trim()) && telOk(dTel.value)) dErreur.hidden = true; }));
   $("dGo").addEventListener("click", () => {
+    const mail = dMail.value.trim().toLowerCase(), tel = dTel.value.trim();
+    const okM = mailOk(mail), okT = telOk(tel);
+    dMail.classList.toggle("ko", !okM); dTel.classList.toggle("ko", !okT);
+    if(!okM || !okT){ dErreur.hidden = false; (okM ? dTel : dMail).focus(); return; }
+    dErreur.hidden = true;
+    try { localStorage.setItem(CLE_CONTACT, JSON.stringify({ mail: mail, telephone: tel })); } catch(e){}
+    quandElleDonneSesInfos(mail, tel);
     window.afficherQuiz();
     questions[0].querySelector("h2").focus({preventScroll: true});
   });
