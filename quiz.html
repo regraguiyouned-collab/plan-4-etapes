@@ -156,6 +156,7 @@ details.plus-temps.plat > summary{display:none}
 .d-pays select{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:16px;width:100%}
 .d-flag{font-size:20px;line-height:1}
 .d-caret{width:9px;height:6px;fill:var(--encre)}
+.d-aide-ico{margin-right:6px}
 .d-aide{margin:2px 2px 0;font-size:15px;line-height:1.4;color:#5E554F}
 .d-erreur{margin:0;color:#C4123A;font-weight:800;font-size:15px}
 .d-erreur[hidden]{display:none}
@@ -233,7 +234,7 @@ details.plus-temps.plat > summary{display:none}
         </label>
         <input class="d-input d-num" type="tel" id="dTel" name="tel-national" autocomplete="tel-national" inputmode="tel" placeholder="06 12 34 56 78" aria-label="Ton numéro de téléphone" required>
       </div>
-      <p class="d-aide">📲 Ton numéro sert uniquement à te prévenir en premier du prochain challenge.</p>
+      <p class="d-aide"><span class="d-aide-ico" aria-hidden="true">📲</span>Ton numéro sert uniquement à te prévenir en premier du prochain challenge.</p>
       <p class="d-erreur" id="dErreur" role="alert" hidden>Indique ton prénom, ton mail et ton numéro pour commencer.</p>
     </div>
     <button type="button" class="btn-main d-go" id="dGo">Commencer</button>
