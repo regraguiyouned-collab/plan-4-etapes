@@ -224,19 +224,19 @@ details.plus-temps.plat > summary{display:none}
   <section class="vue depart" id="vueDepart">
     <h1>Vivre de la conciergerie : ton plan en 4 étapes</h1>
     <p class="intro muted">Du premier repérage à ton premier rendez-vous avec un propriétaire, à côté de ton travail.</p>
-    <div class="d-form">
-      <input class="d-input" type="text" id="dPrenom" name="given-name" autocomplete="given-name" placeholder="Ton prénom" aria-label="Ton prénom" required>
-      <input class="d-input" type="email" id="dMail" name="email" autocomplete="email" inputmode="email" placeholder="Ton adresse mail" aria-label="Ton adresse mail" required>
+    <form class="d-form" id="dForm" autocomplete="on" novalidate>
+      <input class="d-input" type="text" id="dPrenom" name="fname" autocomplete="given-name" autocapitalize="words" placeholder="Ton prénom" aria-label="Ton prénom" required>
+      <input class="d-input" type="email" id="dMail" name="email" autocomplete="email" autocapitalize="off" spellcheck="false" inputmode="email" placeholder="Ton adresse mail" aria-label="Ton adresse mail" required>
       <div class="d-tel">
         <label class="d-pays" aria-label="Indicatif du pays">
           <span class="d-flag" id="dFlag">🇫🇷</span><span class="d-ind" id="dInd">+33</span><svg class="d-caret" viewBox="0 0 10 6" aria-hidden="true"><path d="M0 0h10L5 6z"/></svg>
-          <select id="dPays"><option value="FR" data-ind="33" data-flag="🇫🇷">🇫🇷 France (+33)</option><option value="BE" data-ind="32" data-flag="🇧🇪">🇧🇪 Belgique (+32)</option><option value="CH" data-ind="41" data-flag="🇨🇭">🇨🇭 Suisse (+41)</option><option value="LU" data-ind="352" data-flag="🇱🇺">🇱🇺 Luxembourg (+352)</option><option value="MC" data-ind="377" data-flag="🇲🇨">🇲🇨 Monaco (+377)</option><option value="CA" data-ind="1" data-flag="🇨🇦">🇨🇦 Canada (+1)</option><option value="RE" data-ind="262" data-flag="🇷🇪">🇷🇪 La Réunion (+262)</option><option value="GP" data-ind="590" data-flag="🇬🇵">🇬🇵 Guadeloupe (+590)</option><option value="MQ" data-ind="596" data-flag="🇲🇶">🇲🇶 Martinique (+596)</option><option value="GF" data-ind="594" data-flag="🇬🇫">🇬🇫 Guyane (+594)</option><option value="YT" data-ind="262" data-flag="🇾🇹">🇾🇹 Mayotte (+262)</option><option value="NC" data-ind="687" data-flag="🇳🇨">🇳🇨 Nouvelle-Calédonie (+687)</option><option value="PF" data-ind="689" data-flag="🇵🇫">🇵🇫 Polynésie française (+689)</option><option value="MA" data-ind="212" data-flag="🇲🇦">🇲🇦 Maroc (+212)</option><option value="DZ" data-ind="213" data-flag="🇩🇿">🇩🇿 Algérie (+213)</option><option value="TN" data-ind="216" data-flag="🇹🇳">🇹🇳 Tunisie (+216)</option><option value="SN" data-ind="221" data-flag="🇸🇳">🇸🇳 Sénégal (+221)</option><option value="CI" data-ind="225" data-flag="🇨🇮">🇨🇮 Côte d’Ivoire (+225)</option><option value="CM" data-ind="237" data-flag="🇨🇲">🇨🇲 Cameroun (+237)</option><option value="ES" data-ind="34" data-flag="🇪🇸">🇪🇸 Espagne (+34)</option><option value="PT" data-ind="351" data-flag="🇵🇹">🇵🇹 Portugal (+351)</option><option value="IT" data-ind="39" data-flag="🇮🇹">🇮🇹 Italie (+39)</option><option value="DE" data-ind="49" data-flag="🇩🇪">🇩🇪 Allemagne (+49)</option><option value="GB" data-ind="44" data-flag="🇬🇧">🇬🇧 Royaume-Uni (+44)</option><option value="US" data-ind="1" data-flag="🇺🇸">🇺🇸 États-Unis (+1)</option></select>
+          <select id="dPays" name="pays" autocomplete="off" tabindex="-1"><option value="FR" data-ind="33" data-flag="🇫🇷">🇫🇷 France (+33)</option><option value="BE" data-ind="32" data-flag="🇧🇪">🇧🇪 Belgique (+32)</option><option value="CH" data-ind="41" data-flag="🇨🇭">🇨🇭 Suisse (+41)</option><option value="LU" data-ind="352" data-flag="🇱🇺">🇱🇺 Luxembourg (+352)</option><option value="MC" data-ind="377" data-flag="🇲🇨">🇲🇨 Monaco (+377)</option><option value="CA" data-ind="1" data-flag="🇨🇦">🇨🇦 Canada (+1)</option><option value="RE" data-ind="262" data-flag="🇷🇪">🇷🇪 La Réunion (+262)</option><option value="GP" data-ind="590" data-flag="🇬🇵">🇬🇵 Guadeloupe (+590)</option><option value="MQ" data-ind="596" data-flag="🇲🇶">🇲🇶 Martinique (+596)</option><option value="GF" data-ind="594" data-flag="🇬🇫">🇬🇫 Guyane (+594)</option><option value="YT" data-ind="262" data-flag="🇾🇹">🇾🇹 Mayotte (+262)</option><option value="NC" data-ind="687" data-flag="🇳🇨">🇳🇨 Nouvelle-Calédonie (+687)</option><option value="PF" data-ind="689" data-flag="🇵🇫">🇵🇫 Polynésie française (+689)</option><option value="MA" data-ind="212" data-flag="🇲🇦">🇲🇦 Maroc (+212)</option><option value="DZ" data-ind="213" data-flag="🇩🇿">🇩🇿 Algérie (+213)</option><option value="TN" data-ind="216" data-flag="🇹🇳">🇹🇳 Tunisie (+216)</option><option value="SN" data-ind="221" data-flag="🇸🇳">🇸🇳 Sénégal (+221)</option><option value="CI" data-ind="225" data-flag="🇨🇮">🇨🇮 Côte d’Ivoire (+225)</option><option value="CM" data-ind="237" data-flag="🇨🇲">🇨🇲 Cameroun (+237)</option><option value="ES" data-ind="34" data-flag="🇪🇸">🇪🇸 Espagne (+34)</option><option value="PT" data-ind="351" data-flag="🇵🇹">🇵🇹 Portugal (+351)</option><option value="IT" data-ind="39" data-flag="🇮🇹">🇮🇹 Italie (+39)</option><option value="DE" data-ind="49" data-flag="🇩🇪">🇩🇪 Allemagne (+49)</option><option value="GB" data-ind="44" data-flag="🇬🇧">🇬🇧 Royaume-Uni (+44)</option><option value="US" data-ind="1" data-flag="🇺🇸">🇺🇸 États-Unis (+1)</option></select>
         </label>
-        <input class="d-input d-num" type="tel" id="dTel" name="tel-national" autocomplete="tel-national" inputmode="tel" placeholder="06 12 34 56 78" aria-label="Ton numéro de téléphone" required>
+        <input class="d-input d-num" type="tel" id="dTel" name="phone" autocomplete="tel" inputmode="tel" placeholder="06 12 34 56 78" aria-label="Ton numéro de téléphone" required>
       </div>
       <p class="d-erreur" id="dErreur" role="alert" hidden>Indique ton prénom, ton mail et ton numéro pour commencer.</p>
-    </div>
-    <button type="button" class="btn-main d-go" id="dGo">Commencer</button>
+      <button type="submit" class="btn-main d-go" id="dGo">Commencer</button>
+    </form>
     <p class="d-note">Réponds à 4 questions, ça prend 1&nbsp;minute.</p>
   </section>
 
@@ -754,9 +754,25 @@ function quandElleDonneSesInfos(prenom, mail, telephone){
   const chiffres = v => v.replace(/[^0-9]/g, "");
   const telOk = v => { const n = chiffres(v).replace(/^0+/, ""); return n.length >= 6 && n.length <= 13; };
   const international = v => "+" + dPays.selectedOptions[0].dataset.ind + chiffres(v).replace(/^0+/, "");
+  /* La saisie automatique remplit souvent « +33 6 12… » : on choisit le pays et on garde le numéro national. */
+  const lireIndicatif = () => {
+    const v = dTel.value.trim();
+    if(!/^(\+|00)/.test(v)) return;
+    const n = v.replace(/^00/, "+").replace(/[^0-9+]/g, "").slice(1);
+    const opts = [...dPays.options].sort((a, b) => b.dataset.ind.length - a.dataset.ind.length);
+    const o = opts.find(x => n.startsWith(x.dataset.ind));
+    if(!o) return;
+    if(dPays.selectedOptions[0].dataset.ind !== o.dataset.ind) dPays.value = o.value;
+    majPays();
+    dTel.value = "0" + n.slice(o.dataset.ind.length);
+  };
+  dTel.addEventListener("change", lireIndicatif);
+  dTel.addEventListener("blur", lireIndicatif);
   const tout = [dPrenom, dMail, dTel];
   tout.forEach(el => el.addEventListener("input", () => { el.classList.remove("ko"); boxTel.classList.remove("ko"); }));
-  $("dGo").addEventListener("click", () => {
+  $("dForm").addEventListener("submit", (ev) => {
+    ev.preventDefault();
+    lireIndicatif();
     const prenom = dPrenom.value.trim(), mail = dMail.value.trim().toLowerCase(), tel = dTel.value.trim();
     const okP = prenom.length >= 2, okM = mailOk(mail), okT = telOk(tel);
     dPrenom.classList.toggle("ko", !okP); dMail.classList.toggle("ko", !okM); boxTel.classList.toggle("ko", !okT);
