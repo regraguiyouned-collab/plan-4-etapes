@@ -15,9 +15,12 @@
   --f-main:"Kalam", "Nunito", cursive;
 }
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--creme);color:var(--encre);font-family:var(--f-corps);font-size:18px;line-height:1.55;
-  background-image:radial-gradient(circle at 15% 0%, rgba(255,229,232,.7) 0, transparent 38%),radial-gradient(circle at 100% 70%, rgba(221,241,242,.6) 0, transparent 40%)}
+/* Fond : posé sur html (qui fait toute la hauteur de la page), étiré sur toute la page jusqu'en bas */
+html{-webkit-text-size-adjust:100%;min-height:100%;background-color:var(--creme);
+  background-image:radial-gradient(circle at 15% 0%, rgba(255,229,232,.7) 0, transparent 38%),radial-gradient(circle at 100% 70%, rgba(221,241,242,.6) 0, transparent 40%),radial-gradient(circle at 0% 100%, rgba(255,229,232,.45) 0, transparent 35%);
+  background-repeat:no-repeat;background-size:100% 100%}
+body{margin:0;min-height:100%;background:transparent;color:var(--encre);font-family:var(--f-corps);font-size:18px;line-height:1.55}
+[hidden]{display:none!important}
 button{font:inherit;color:inherit;cursor:pointer}
 a{color:var(--rouge)}
 .wrap{max-width:720px;margin:0 auto;padding:22px 18px 56px}
@@ -60,15 +63,48 @@ ul{margin:4px 0 12px;padding-left:22px}li{margin:4px 0}
 .check-head input:checked + .check-box{background:var(--rouge);border-color:var(--rouge)}
 .check-head input:checked + .check-box::after{content:"";width:7px;height:13px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg) translate(-1px,-1px)}
 .check-head input:focus-visible + .check-box{outline:3px solid rgba(255,56,92,.35);outline-offset:2px}
-.check-title{font-weight:900;font-size:1.02em;line-height:1.3;padding-top:2px}
+/* cible tactile ≥ 44 px sans créer de vide sous les titres courts */
+.check-head{padding:8px 0;margin:-8px 0}
+.check-title{flex:1;min-width:0;font-weight:900;font-size:1.02em;line-height:1.3;padding-top:2px}
 .check.is-checked{border-color:var(--rouge);background:#FFFBFB}
+/* Texte toujours aligné sous le titre (décalé de la case), téléphone comme ordinateur */
 .check-body{margin:10px 0 0 40px;color:var(--gris)}
 .check-body p{margin:0 0 8px}
+.check-body > :last-child{margin-bottom:0}
+/* Actions prioritaires (⭐) : badge à droite + carte qui ressort */
+.check.is-prio{border:2px solid #FFB3C0;background:#FFF7F8}
+.check.is-prio.is-checked{border-color:var(--rouge)}
+.prio{flex:none;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:var(--rose-pale);font-size:16px;line-height:1;margin-left:4px}
+
+/* Encadrés d'info (pas des actions : pas de case) */
+.info{background:var(--creme-2);border-radius:18px;padding:16px 18px;margin:0 0 14px}
+.info h3{margin:0 0 6px}
+.info p{margin:0 0 8px}.info ul{margin:4px 0 0}
+.info > :last-child{margin-bottom:0}
+.info.danger{background:#fff;border:1.5px solid var(--bord);border-left:5px solid var(--rouge);border-radius:8px 18px 18px 8px}
+
+/* Consigne (« Tu as 2 heures par semaine ? … ») */
+.consigne{display:flex;gap:12px;align-items:center;background:var(--encre);color:#fff;border-radius:16px;padding:14px 18px;margin:0 0 14px;font-weight:800;font-size:17px;line-height:1.4}
+.consigne svg{flex:none;width:26px;height:26px}
+.consigne p{margin:0}
+
+/* Félicitations (même modèle aux étapes 1 à 4) */
+.bravo{text-align:center;background:linear-gradient(160deg,var(--rose-pale) 0,#fff 55%,var(--bleu-pale) 100%);border:2px solid var(--bord);border-radius:26px;padding:34px 20px 28px;margin:6px 0 14px}
+.bravo h2{font-family:var(--f-titre);font-weight:400;font-size:38px;line-height:1.1;margin:0 0 12px;color:var(--rouge)}
+@media (min-width:900px){ .bravo h2{font-size:48px} }
+.bravo .bravo-sub{font-size:19px;font-weight:800;margin:0 0 20px}
+.bravo .bravo-sub:last-child{margin-bottom:0}
+.bravo .btn-main{margin:0 auto 18px;display:flex;align-items:center;justify-content:center;max-width:420px}
+.bravo .bravo-mail{background:#fff;border:1.5px dashed #D8C9B8;border-radius:16px;padding:12px 14px;margin:0;color:var(--gris);font-weight:700}
+
+/* Écrans courts : contenu centré verticalement */
+body[data-vue="depart"] .wrap,body[data-vue="questions"] .wrap,body[data-vue="bravo"] .wrap{display:flex;flex-direction:column;min-height:100vh;min-height:100svh}
+body[data-vue="depart"] .vue:not([hidden]),body[data-vue="questions"] .vue:not([hidden]),body[data-vue="bravo"] .bravo{margin-top:auto;margin-bottom:auto}
 
 /* Boutons */
 .btn-main{display:block;width:100%;background:var(--rouge);color:#fff;border:0;border-radius:999px;padding:16px 20px;font-weight:900;font-size:17px;text-align:center;font-family:var(--f-corps);box-shadow:0 4px 0 var(--rouge-fonce);text-decoration:none}
 .btn-main:active{transform:translateY(2px);box-shadow:0 2px 0 var(--rouge-fonce)}
-.btn-main[aria-disabled="true"]{opacity:.4;box-shadow:none;cursor:default}
+.btn-main[aria-disabled="true"]{background:#fff;color:var(--gris);border:2px solid #CDBFB0;box-shadow:none;cursor:not-allowed;transform:none}
 @media (min-width:900px){ .btn-main{max-width:460px;margin:0 auto} }
 .confirmation{display:none;background:var(--encre);color:#fff;border-radius:18px;padding:16px;font-weight:800;text-align:center;margin-top:12px}
 .is-done .confirmation{display:block}
@@ -78,13 +114,17 @@ ul{margin:4px 0 12px;padding-left:22px}li{margin:4px 0}
 @media (hover:hover){ .option:hover{border-color:#D8C9B8} }
 </style>
 <style>
-body{min-height:100vh}
-.depart{padding:10px 0 0}
-@media (min-width:900px){ .depart{padding-top:40px;text-align:center} }
+.depart{padding:0}
+@media (min-width:900px){ .depart{text-align:center} }
 .depart .intro{font-size:1.12em;margin:0 0 28px}
+/* Aperçu des 4 étapes (titres des étapes) */
+.d-etapes{list-style:none;counter-reset:e;margin:30px auto 0;padding:16px 18px;max-width:460px;text-align:left;background:rgba(255,255,255,.75);border:1.5px solid var(--bord);border-radius:20px}
+.d-etapes li{counter-increment:e;display:flex;align-items:center;gap:12px;margin:0;padding:9px 0;font-weight:800;font-size:17px;line-height:1.3}
+.d-etapes li + li{border-top:1px dashed #E3D6C8}
+.d-etapes li::before{content:counter(e);flex:none;width:30px;height:30px;border-radius:50%;background:var(--rose-pale);color:var(--rouge);font-family:var(--f-titre);font-size:18px;display:flex;align-items:center;justify-content:center}
 .d-go{max-width:460px;margin-left:auto;margin-right:auto}
-.d-note{margin:12px auto 0;max-width:460px;text-align:center;font-size:14.5px;line-height:1.4;color:#3D3439;letter-spacing:.1px}
-@media (max-width:899px){ .d-go{margin-left:0;margin-right:0} .d-note{margin-left:0;margin-right:0} }
+.d-note{margin:12px auto 0;max-width:460px;text-align:center;font-size:16px;line-height:1.4;color:#3D3439;letter-spacing:.1px}
+@media (max-width:899px){ .d-go{margin-left:0;margin-right:0} .d-note{margin-left:0;margin-right:0} .d-etapes{margin-left:0;margin-right:0} }
 .r-refaire-wrap{text-align:center;margin:18px 0 0}
 .r-refaire{background:none;border:0;padding:10px 6px;min-height:44px;color:var(--gris);font-weight:700;font-size:16px;text-decoration:underline;text-underline-offset:3px}
 .r-refaire:hover{color:var(--encre)}
@@ -110,16 +150,30 @@ body{min-height:100vh}
 .q-prev:hover{color:var(--encre)}
 .q-go{margin-top:18px}
 .q-go[hidden]{display:none}
-.q-go[aria-disabled="true"]{opacity:1;background:#E9DED2;color:var(--gris);box-shadow:none}
+.q-go[aria-disabled="true"]{opacity:1;background:#fff;color:var(--gris);border:2px solid #CDBFB0;box-shadow:none;cursor:not-allowed}
 .vue[hidden]{display:none}
 .resultat h1 .hl{color:var(--rouge)}
-.resultat h1{margin-bottom:22px}
+.resultat h1{margin-bottom:24px}
+/* le chiffre en très grand */
+.resultat h1 .r-num{display:inline-block;font-size:2.3em;line-height:.85;vertical-align:-.12em;margin:0 .04em}
+.resultat p{margin:0}
 .resultat .story p b,.resultat .card p b{color:var(--encre)}
 .r-ligne[hidden]{display:none}
-.resultat .card p,.resultat .story p{margin:0}
-.resultat .r-perso p:not([hidden]) ~ p:not([hidden]){margin-top:12px}
-.r-fin{font-weight:800;font-size:1.06em;margin:22px 0 18px}
-@media (min-width:900px){ .r-fin{text-align:center} }
+/* « Le calcul » et « Et le temps ? » : deux cartes (côte à côte sur ordinateur) */
+.r-duo{display:grid;gap:14px;margin:0 0 14px}
+.r-duo .card{margin:0;box-shadow:0 4px 16px rgba(36,36,36,.04)}
+@media (min-width:700px){ .r-duo{grid-template-columns:1fr 1fr} }
+/* selon la ville : encadré sobre */
+.r-ville-box{background:var(--creme-2);border-radius:18px;padding:16px 18px;margin:0 0 14px}
+/* selon l'avancement : la prochaine étape, mise en avant */
+.r-etape-box{background:var(--rose-pale);border-left:5px solid var(--rouge);border-radius:8px 18px 18px 8px;padding:16px 18px;margin:0 0 14px;font-weight:800}
+/* la preuve : citation */
+.r-preuve{position:relative;padding:22px 20px 20px 62px;margin:22px 0 0}
+.r-preuve::before{content:"\201C";position:absolute;left:16px;top:6px;font-family:var(--f-titre);font-size:64px;line-height:1;color:var(--rouge)}
+.r-preuve p{font-size:1.08em;line-height:1.5}
+.resultat .r-fin{font-weight:800;font-size:1.12em;margin:26px 0 18px}
+#rObjectif{white-space:nowrap}
+@media (min-width:900px){ .resultat .r-fin{text-align:center} }
 </style>
 </head><body data-vue="depart">
 <main class="wrap">
@@ -131,6 +185,12 @@ body{min-height:100vh}
     <p class="intro muted">Du premier repérage à ton premier rendez-vous avec un propriétaire, à côté de ton travail.</p>
     <button type="button" class="btn-main d-go" id="dGo">Commencer</button>
     <p class="d-note">Réponds à 4 questions, ça prend 1&nbsp;minute.</p>
+    <ol class="d-etapes">
+      <li>Je pose les bases</li>
+      <li>Je me rends visible</li>
+      <li>Je vais chercher les propriétaires</li>
+      <li>Mon premier rendez-vous</li>
+    </ol>
   </section>
 
   <!-- ============ VUE QUESTIONS ============ -->
@@ -180,16 +240,20 @@ body{min-height:100vh}
 
   <!-- ============ VUE RÉSULTAT ============ -->
   <section class="vue resultat" id="vueResultat" hidden>
-    <h1 tabindex="-1">Pour gagner <span class="hl" id="rObjectif">2&nbsp;000&nbsp;€</span> par mois, il te faut environ <span class="hl" id="rNombre">5</span> logements.</h1>
+    <h1 tabindex="-1">Pour gagner <span class="hl" id="rObjectif">2&#8239;000&nbsp;€</span> par mois, il te faut environ <span class="hl" id="rNombre"><span class="r-pre"></span><span class="r-num">5</span></span> logements.</h1>
 
-    <div class="card r-calcul"><p><b>Le calcul :</b> Un logement qui rapporte 2&#8239;000&nbsp;€ par mois à son propriétaire : tu prends 20&nbsp;%, soit 400&nbsp;€. Pour un logement simple, compte entre 300 et 400&nbsp;€ par mois. Tu n'achètes rien et tu ne fais pas de crédit.</p></div>
+    <div class="r-duo">
+    <div class="card r-calcul"><p><b>Le calcul :</b> un logement qui rapporte 2&#8239;000&nbsp;€ par mois à son propriétaire : tu prends 20&nbsp;%, soit 400&nbsp;€. Pour un logement simple, compte entre 300 et 400&nbsp;€ par mois. Tu n'achètes rien et tu ne fais pas de crédit.</p></div>
 
-    <div class="card r-temps"><p><b>Et le temps ?</b> Tu ne fais pas tout toi-même. Le ménage, c'est le voyageur qui le paie et quelqu'un d'autre qui le fait. Toi, tu organises.</p></div>
+    <div class="card r-temps"><p><b>Et le temps ?</b> Tu ne fais pas tout toi-même. Le ménage, c'est le voyageur qui le paie et des prestataires de ménage indépendants qui le font. Toi, tu organises.</p></div>
+    </div>
 
-    <div class="card r-perso">
+    <div class="r-perso r-ville-box">
       <p class="r-ligne r-ville" data-q1="grande">En ville, les logements se louent toute l'année, pas seulement pendant les vacances.</p>
-      <p class="r-ligne r-ville" data-q1="moyenne">Ton terrain, ce n'est pas que ta ville : c'est tout ce qui se trouve à 30-45 minutes de chez toi.</p>
+      <p class="r-ligne r-ville" data-q1="moyenne">Ton terrain, ce n'est pas que ta ville : c'est tout ce qui se trouve à 30–45 minutes de chez toi.</p>
       <p class="r-ligne r-ville" data-q1="campagne">À la campagne, il y a moins de concurrence, et surtout des maisons, qui rapportent plus.</p>
+    </div>
+    <div class="r-perso r-etape-box">
       <p class="r-ligne r-etape" data-q3="decouvre">Commence par l'étape 1.</p>
       <p class="r-ligne r-etape" data-q3="lance">Les étapes 1 et 2 iront vite pour toi. Ta vraie étape, c'est la 3.</p>
       <p class="r-ligne r-etape" data-q3="proprio">Tu as fait le plus dur. Les étapes 1 et 2 iront vite, ta vraie étape, c'est la 3.</p>
@@ -204,6 +268,74 @@ body{min-height:100vh}
     <p class="r-refaire-wrap"><button type="button" class="r-refaire" id="rRefaire">Refaire le quiz</button></p>
   </section>
 </main>
+<script>
+/* ===== Typographie française (autonome) =====
+   window.typoFix(root) : apostrophes et guillemets typographiques,
+   espaces insécables (: ; ? ! « » € % milliers, « et 4 », emoji final).
+   Un élément marqué data-notypo (et son contenu) est ignoré.
+   Lancée tout de suite, au DOMContentLoaded, puis sur tout texte ajouté
+   ensuite (MutationObserver). Ne réécrit un nœud que s'il change. */
+(function(){
+  if (window.typoFix) return;
+  var NBSP = "\u00A0", FINE = "\u202F";
+  var SKIP = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, INPUT: 1, NOSCRIPT: 1, CODE: 1, PRE: 1 };
+  var EMOJI_FIN;
+  try { EMOJI_FIN = new RegExp("[ \\u00A0\\u202F]+((?:\\p{Extended_Pictographic}|[\\uFE0F\\u200D])+)(\\s*)$", "u"); } catch (e) { EMOJI_FIN = null; }
+
+  function corrige(t){
+    var s = t;
+    s = s.replace(/'/g, "\u2019");
+    s = s.replace(/"([^"\n]*)"/g, "\u201C$1\u201D");
+    s = s.replace(/(^|[\s(«\u00A0\u202F])"/g, "$1\u201C").replace(/"/g, "\u201D");
+    s = s.replace(/[ \u00A0\u202F]+([;?!])/g, NBSP + "$1");
+    s = s.replace(/[ \u202F]+([:»])/g, NBSP + "$1");
+    s = s.replace(/«[ \u202F]+/g, "«" + NBSP);
+    s = s.replace(/(\d)(?: |\u00A0)(?=\d{3}(?!\d))/g, "$1" + FINE);
+    s = s.replace(/(\d)[ \u202F]+([€%])/g, "$1" + NBSP + "$2");
+    s = s.replace(/(^|[^\wÀ-ÿ])et (\d)/g, "$1et" + NBSP + "$2");
+    if (EMOJI_FIN) s = s.replace(EMOJI_FIN, NBSP + "$1$2");
+    return s;
+  }
+  function aIgnorer(n){
+    for (var p = n.parentNode; p && p.nodeType === 1; p = p.parentNode) {
+      if (SKIP[p.nodeName] || p.isContentEditable || p.hasAttribute("data-notypo")) return true;
+    }
+    return false;
+  }
+  function fixNode(n){
+    if (n.nodeType !== 3 || !n.data || aIgnorer(n)) return;
+    var v = corrige(n.data);
+    if (v !== n.data) n.data = v;
+  }
+  window.typoFix = function(root){
+    root = root || document.body;
+    if (!root) return;
+    if (root.nodeType === 3) { fixNode(root); return; }
+    if (root.nodeType !== 1 && root.nodeType !== 9 && root.nodeType !== 11) return;
+    if (root.nodeType === 1 && (SKIP[root.nodeName] || root.closest("[data-notypo]"))) return;
+    var w = document.createTreeWalker(root, 4, null), n, liste = [];
+    while ((n = w.nextNode())) liste.push(n);
+    liste.forEach(fixNode);
+  };
+
+  var obs = null;
+  function demarrer(){
+    if (!document.body) return;
+    window.typoFix(document.body);
+    if (obs || !window.MutationObserver) return;
+    obs = new MutationObserver(function(muts){
+      muts.forEach(function(m){
+        if (m.type === "characterData") fixNode(m.target);
+        else for (var i = 0; i < m.addedNodes.length; i++) window.typoFix(m.addedNodes[i]);
+      });
+    });
+    obs.observe(document.body, { childList: true, characterData: true, subtree: true });
+  }
+  if (document.body) demarrer();
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", demarrer);
+})();
+
+</script>
 <script>
 /* ================= À REMPLIR UNE SEULE FOIS =================
    Colle entre les guillemets l'URL du script Google Apps Script
@@ -252,6 +384,7 @@ const SHEET_URL = "COLLE_ICI_L_URL_DU_SCRIPT";
     if (!panneau) {
       panneau = document.createElement("div");
       panneau.setAttribute("aria-live", "polite");
+      panneau.setAttribute("data-notypo", "");
       panneau.style.cssText = "position:fixed;left:8px;right:8px;bottom:8px;z-index:9999;max-width:704px;margin:0 auto;" +
         "background:#fff;border:1px solid #ccc;border-radius:8px;padding:8px 10px;font:12.5px/1.4 ui-monospace,Menlo,Consolas,monospace;" +
         "color:#333;box-shadow:0 2px 10px rgba(0,0,0,.08);word-break:break-all;max-height:30vh;overflow:auto";
@@ -427,7 +560,9 @@ function quandElleAFini(reponses){
     const plus = objectif >= 5000;
     const nombre = Math.ceil(objectif / PAR_LOGEMENT);
     $("rObjectif").textContent = euros(objectif) + (plus ? " et plus" : "");
-    $("rNombre").textContent = (plus ? "au moins " : "") + nombre;
+    const rN = $("rNombre");
+    rN.querySelector(".r-pre").textContent = plus ? "au moins " : "";
+    rN.querySelector(".r-num").textContent = nombre;
     vueRes.querySelectorAll("[data-q1]").forEach(e => e.hidden = e.dataset.q1 !== r.q1);
     vueRes.querySelectorAll("[data-q3]").forEach(e => e.hidden = e.dataset.q3 !== r.q3);
     const fin = r.q3 === "proprio" ? "suivants" : "premier";
