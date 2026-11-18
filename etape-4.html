@@ -112,6 +112,26 @@ body[data-vue="depart"] .vue:not([hidden]),body[data-vue="questions"] .vue:not([
 .option{display:block;width:100%;text-align:left;background:#fff;border:2px solid var(--bord);border-radius:16px;padding:14px 16px;margin:0 0 10px;font-weight:700;font-size:1em;font-family:var(--f-corps);color:var(--encre)}
 .option.on{border-color:var(--rouge);background:var(--rose-pale)}
 @media (hover:hover){ .option:hover{border-color:#D8C9B8} }
+
+/* ===== Personnalisation selon le quiz (voir envoi.js) ===== */
+/* « Ton objectif : … » sous la barre d'étapes */
+.perso-objectif{margin:-6px 0 16px;font-size:15px;font-weight:700;line-height:1.4;color:var(--gris)}
+/* sans quiz : petit lien vers le quiz */
+.lien-quiz{margin:-12px 0 8px}
+.lien-quiz a{display:inline-flex;align-items:center;min-height:44px;color:var(--gris);font-weight:700;font-size:15px;text-decoration:underline;text-underline-offset:3px}
+.lien-quiz a:hover{color:var(--encre)}
+/* « Si tu as plus de temps » : actions sans étoile repliées (q2 = 2 h) */
+details.plus-temps{margin:0 0 14px;border:1.5px dashed #D8C9B8;border-radius:18px;background:rgba(255,255,255,.55)}
+details.plus-temps > summary{list-style:none;display:flex;align-items:center;gap:12px;min-height:56px;padding:10px 16px;font-weight:900;font-size:1.02em;line-height:1.3;color:var(--encre);cursor:pointer;border-radius:18px}
+details.plus-temps > summary::-webkit-details-marker{display:none}
+details.plus-temps > summary::before{content:"+";flex:none;width:28px;height:28px;border-radius:50%;background:var(--rose-pale);color:var(--rouge);font-size:22px;font-weight:900;line-height:28px;text-align:center}
+details.plus-temps[open] > summary::before{content:"−";line-height:26px}
+details.plus-temps > summary:focus-visible{outline:3px solid rgba(255,56,92,.35);outline-offset:2px}
+details.plus-temps[open]{padding:0 12px 0}
+details.plus-temps[open] > summary{margin:0 -12px 4px}
+/* sans quiz, ou 5 h / plus : on ne replie rien, le repli disparaît */
+details.plus-temps.plat{border:0;background:none;padding:0;margin:0}
+details.plus-temps.plat > summary{display:none}
 </style>
 <style>
 .check-body ul{margin:0 0 4px}
@@ -132,7 +152,9 @@ body[data-vue="depart"] .vue:not([hidden]),body[data-vue="questions"] .vue:not([
   </div>
 
   <div id="contenu">
-  <h1>Mon premier rendez-vous</h1>
+  <p class="perso-objectif" data-quiz="avec" hidden></p>
+  <p class="lien-quiz" data-quiz="sans"><a href="quiz.html">Faire le quiz pour adapter mon plan</a></p>
+  <h1>Mon <span data-si="q3:decouvre lance">premier</span><span data-quiz="avec" data-si="q3:proprio" hidden>prochain</span> rendez-vous</h1>
   <p class="intro">Un propriétaire t'a répondu ? Voilà comment te préparer. Pas encore de réponse ? C'est normal. Lis quand même, tu seras prête.</p>
 
   <div class="story" id="histoire">
@@ -277,6 +299,13 @@ body[data-vue="depart"] .vue:not([hidden]),body[data-vue="questions"] .vue:not([
 
 </script>
 <script>
+/* ================= MONTANT PAR LOGEMENT =================
+   Ce qu'un logement lui rapporte par mois, en euros.
+   À confirmer avec Lara. Utilisé par le quiz ET les étapes 1 à 4
+   (nombre de logements = objectif ÷ ce montant, arrondi au-dessus). */
+const PAR_LOGEMENT = 400;
+/* ======================================================== */
+
 /* ================= À REMPLIR UNE SEULE FOIS =================
    Colle entre les guillemets l'URL du script Google Apps Script
    (elle se termine par /exec), puis relance : python3 v2/build_pages.py
@@ -380,6 +409,81 @@ const SHEET_URL = "COLLE_ICI_L_URL_DU_SCRIPT";
   };
 })();
 
+
+/* ================= RÉPONSES DU QUIZ =================
+   lireReponses() : les 4 réponses du quiz gardées sur ce téléphone
+   (localStorage « ca-plan-quiz »), ou null si le quiz n'a pas été fait.
+   { q1: 'grande'|'moyenne'|'campagne', q2: '2h'|'5h'|'plus',
+     q3: 'decouvre'|'lance'|'proprio', q4: 1000|2000|3000|5000 } */
+function lireReponses(){
+  var VALEURS = { q1: ["grande", "moyenne", "campagne"], q2: ["2h", "5h", "plus"],
+                  q3: ["decouvre", "lance", "proprio"], q4: ["1000", "2000", "3000", "5000"] };
+  try {
+    var st = JSON.parse(localStorage.getItem("ca-plan-quiz") || "null");
+    var r = st && st.reponses;
+    if (!r || typeof r !== "object") return null;
+    var res = {};
+    for (var k in VALEURS) {
+      if (r[k] === undefined || r[k] === null || VALEURS[k].indexOf(String(r[k])) < 0) return null;
+      res[k] = k === "q4" ? +r[k] : String(r[k]);
+    }
+    return res;
+  } catch (e) { return null; }
+}
+/* « 3 000 € » (l'espace des milliers est affinée par typo.js) */
+function eurosTexte(v){ return String(v).replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " €"; }
+/* nombre de logements pour un objectif mensuel */
+function nombreLogements(objectif){ return Math.ceil(objectif / PAR_LOGEMENT); }
+
+/* ================= PERSONNALISATION DES ÉTAPES =================
+   Rien n'est retiré de la page : on montre ou on cache (attribut hidden).
+   - data-quiz="avec" : visible seulement si le quiz est fait
+     data-quiz="sans" : visible seulement si le quiz n'est pas fait
+   - data-si="q1:moyenne campagne" : si le quiz est fait, visible seulement
+     pour ces réponses (sans quiz : visible)
+   - .perso-objectif : « Ton objectif : … » (rempli ici)
+   - details.plus-temps : actions sans étoile, repliées si q2 = 2h
+   Sans quiz, la page reste la version complète. */
+function personnaliser(){
+  var r = lireReponses();
+  var html = document.documentElement;
+  html.classList.toggle("avec-quiz", !!r);
+  html.classList.toggle("sans-quiz", !r);
+  function visible(el){
+    var q = el.getAttribute("data-quiz");
+    if (q === "avec" && !r) return false;
+    if (q === "sans" && r) return false;
+    var si = el.getAttribute("data-si");
+    if (si && r) {
+      var p = si.split(":");
+      return p[1].split(/[\s,]+/).indexOf(String(r[p[0].trim()])) >= 0;
+    }
+    return true;
+  }
+  document.querySelectorAll("[data-quiz],[data-si]").forEach(function(el){ el.hidden = !visible(el); });
+  document.querySelectorAll(".perso-objectif").forEach(function(el){
+    if (!r) { el.textContent = ""; return; }
+    var plus = r.q4 >= 5000;
+    el.textContent = "Ton objectif : " + eurosTexte(r.q4) + (plus ? " et plus" : "") + " par mois, soit " +
+      (plus ? "au moins " : "environ ") + nombreLogements(r.q4) + "\u00A0logements";  /* insécable : « 8 logements » jamais coupé */
+  });
+  document.querySelectorAll("details.plus-temps").forEach(function(d){
+    var replie = !!r && r.q2 === "2h";
+    d.classList.toggle("plat", !replie);
+    d.open = !replie;
+  });
+  if (typeof window.quandPerso === "function") { try { window.quandPerso(r); } catch (e) {} }
+  if (window.typoFix) window.typoFix(document.body);
+  return r;
+}
+if (/etape-\d/.test(location.pathname)) {
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", personnaliser);
+  else personnaliser();
+  /* retour arrière (page gardée en mémoire) ou quiz refait dans un autre onglet */
+  window.addEventListener("pageshow", function(ev){ if (ev.persisted) personnaliser(); });
+  window.addEventListener("storage", function(ev){ if (!ev.key || ev.key === "ca-plan-quiz") personnaliser(); });
+}
+
 </script>
 <script>
 /* ============ BRANCHEMENT (phase 2) ============
@@ -393,6 +497,11 @@ function quandElleClique(){
 /* La page a été ouverte : l'étape 4 est atteinte. */
 envoyer({derniere_etape: 4});
 /* =============================================== */
+
+/* Si elle s'occupe déjà d'un logement (q3 = proprio) : « prochain » au lieu de « premier » dans le titre de l'onglet */
+var TITRE = document.title;
+window.quandPerso = function(r){ document.title = (r && r.q3 === 'proprio') ? TITRE.replace('Mon premier', 'Mon prochain') : TITRE; };
+window.quandPerso(lireReponses());
 
 var CLE = 'ca-plan-etape-4';
 var etat = { checks: {}, done: false };
