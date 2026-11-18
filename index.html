@@ -776,17 +776,10 @@ function quandElleDonneSesInfos(prenom, mail, telephone){
     ORDRE.forEach(k => { if(st.reponses[k] !== undefined) window.REPONSES[k] = k === "q4" ? +st.reponses[k] : st.reponses[k]; });
   }
   $("rGo").setAttribute("href", LIEN_ETAPE_1);
-  const vueSauvee = st && (st.vue || (st.resultat ? "resultat" : null));
-  if(vueSauvee === "resultat" && complet(window.REPONSES)){
-    window.afficherResultat(window.REPONSES);
-  } else if(vueSauvee === "questions" || (vueSauvee !== "depart" && Object.keys(window.REPONSES).length)){
-    montrerVue("questions");
-    const premiere = ORDRE.findIndex(k => window.REPONSES[k] === undefined);
-    montrerQuestion(premiere === -1 ? 3 : premiere, false);
-  } else {
-    montrerVue("depart");
-    montrerQuestion(0, false);
-  }
+  /* À chaque ouverture, la page repart de l'écran de départ
+     (prénom, mail et numéro déjà remplis s'ils ont été donnés). */
+  montrerVue("depart");
+  montrerQuestion(0, false);
 })();
 </script>
 </body></html>
