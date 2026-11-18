@@ -1,0 +1,144 @@
+/**
+ * Liste d'attente du freebie de Carole-Anne : UNE ligne par personne (id = Contact Id ManyChat).
+ * Reçoit deux sortes d'envois, à la même adresse /exec :
+ *  - ManyChat (action « External Request ») : id, pseudo Instagram, mail ;
+ *  - les 5 pages (quiz + étapes 1 à 4) : réponses du quiz, dernière étape, « je suis prête ».
+ * Les deux remplissent la même ligne grâce au même id.
+ */
+
+var ONGLET = "Liste d'attente";
+var ENTETES = [
+  "id",
+  "pseudo Instagram",
+  "mail",
+  "date d'entrée",
+  "date dernière activité",
+  "q1 ville",
+  "q2 temps",
+  "q3 avancement",
+  "q4 objectif",
+  "logements",
+  "dernière étape atteinte",
+  "je suis prête",
+  "téléphone"
+];
+// numéro de colonne (1 = A) de chaque champ
+var COL = { id: 1, pseudo: 2, mail: 3, entree: 4, maj: 5, q1: 6, q2: 7, q3: 8, q4: 9, logements: 10, derniere_etape: 11, pret: 12, telephone: 13 };
+
+function doGet() {
+  return repondre({ ok: true, message: "script en ligne" });
+}
+
+function doPost(e) {
+  var verrou = LockService.getScriptLock();
+  try {
+    var d = lireEnvoi(e);
+    var id = String(d.id || "").trim();
+    if (!id || id.indexOf("{{") === 0) return repondre({ ok: false, erreur: "id manquant" });
+
+    verrou.waitLock(20000); // un seul envoi à la fois : jamais de doublon
+    var feuille = ongletListe();
+    var maintenant = new Date();
+
+    // cherche l'id dans la colonne A
+    var ligne = 0;
+    var n = feuille.getLastRow();
+    if (n >= 2) {
+      var ids = feuille.getRange(2, COL.id, n - 1, 1).getDisplayValues();
+      for (var i = 0; i < ids.length; i++) {
+        if (String(ids[i][0]).trim() === id) { ligne = i + 2; break; }
+      }
+    }
+
+    var valeurs;
+    if (ligne) {
+      valeurs = feuille.getRange(ligne, 1, 1, ENTETES.length).getValues()[0];
+    } else {
+      valeurs = ENTETES.map(function () { return ""; });
+      valeurs[COL.id - 1] = id;
+      valeurs[COL.entree - 1] = maintenant;
+    }
+    valeurs[COL.maj - 1] = maintenant;
+
+    // ManyChat : pseudo et mail (seulement s'ils sont remplis)
+    var pseudo = nettoyer(d.pseudo);
+    if (pseudo) valeurs[COL.pseudo - 1] = propre(pseudo.replace(/^@/, ""));
+    var mail = nettoyer(d.mail || d.email);
+    if (mail) valeurs[COL.mail - 1] = propre(mail.toLowerCase());
+    var tel = nettoyer(d.telephone || d.tel || d.phone);
+    if (tel) valeurs[COL.telephone - 1] = "'" + tel.slice(0, 40);
+
+    // pages : réponses du quiz (seulement les champs reçus)
+    ["q1", "q2", "q3", "q4", "logements"].forEach(function (k) {
+      if (d[k] !== undefined && d[k] !== null && d[k] !== "") valeurs[COL[k] - 1] = propre(d[k]);
+    });
+    if ((d.q4 === undefined || d.q4 === "") && d.objectif) valeurs[COL.q4 - 1] = propre(d.objectif);
+
+    // dernière étape atteinte : ne redescend jamais
+    var nouvelle = parseInt(d.derniere_etape, 10);
+    if (nouvelle >= 1 && nouvelle <= 4) {
+      var ancienne = parseInt(valeurs[COL.derniere_etape - 1], 10) || 0;
+      valeurs[COL.derniere_etape - 1] = Math.max(ancienne, nouvelle);
+    }
+
+    // je suis prête : ne repasse jamais à vide
+    if (d.pret) valeurs[COL.pret - 1] = "oui";
+
+    if (!ligne) {
+      ligne = feuille.getLastRow() + 1;
+      feuille.getRange(ligne, COL.id).setNumberFormat("@"); // l'id reste du texte
+    }
+    feuille.getRange(ligne, 1, 1, ENTETES.length).setValues([valeurs]);
+    feuille.getRange(ligne, COL.entree, 1, 2).setNumberFormat("dd/MM/yyyy HH:mm");
+    SpreadsheetApp.flush();
+    return repondre({ ok: true });
+  } catch (err) {
+    return repondre({ ok: false, erreur: String(err && err.message ? err.message : err) });
+  } finally {
+    try { verrou.releaseLock(); } catch (e2) {}
+  }
+}
+
+// accepte du JSON (pages, ManyChat) ou un formulaire classique
+function lireEnvoi(e) {
+  var brut = (e && e.postData && e.postData.contents) || "";
+  try { if (brut) return JSON.parse(brut); } catch (x) {}
+  return (e && e.parameter) || {};
+}
+
+// un champ ManyChat vide arrive parfois tel quel (« {{email}} ») : on l'ignore
+function nettoyer(v) {
+  if (v === undefined || v === null) return "";
+  var s = String(v).trim();
+  if (!s || /^\{\{.*\}\}$/.test(s) || s.toLowerCase() === "null") return "";
+  return s;
+}
+
+// ouvre l'onglet « Liste d'attente », le crée avec les en-têtes s'il n'existe pas
+function ongletListe() {
+  var classeur = SpreadsheetApp.getActiveSpreadsheet();
+  var f = classeur.getSheetByName(ONGLET);
+  if (!f) {
+    f = classeur.insertSheet(ONGLET);
+    f.getRange(1, 1, 1, ENTETES.length).setValues([ENTETES]).setFontWeight("bold");
+    f.setFrozenRows(1);
+    f.getRange("A:A").setNumberFormat("@");
+  }
+  // ajoute les colonnes manquantes (ex. « téléphone ») sans toucher aux lignes existantes
+  var entetes = f.getRange(1, 1, 1, ENTETES.length).getValues()[0];
+  for (var c = 0; c < ENTETES.length; c++) {
+    if (entetes[c] !== ENTETES[c]) f.getRange(1, c + 1).setValue(ENTETES[c]).setFontWeight("bold");
+  }
+  return f;
+}
+
+// évite qu'un texte commençant par = + - @ soit pris pour une formule
+function propre(v) {
+  if (typeof v === "number") return v;
+  var s = String(v).slice(0, 300);
+  return /^[=+\-@]/.test(s) ? "'" + s : s;
+}
+
+function repondre(objet) {
+  return ContentService.createTextOutput(JSON.stringify(objet)).setMimeType(ContentService.MimeType.JSON);
+}
