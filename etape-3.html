@@ -377,11 +377,16 @@ const SHEET_URL = "https://script.google.com/macros/s/AKfycbxONX9I7Rvq2zIMgQESc7
   /* --- envoi : ne bloque jamais la page, ne lève jamais d'erreur --- */
   window.envoyer = function(donnees){
     try {
-      if (!id) {
-        quandPret(function(){ montrer("pas d'id dans l'adresse", "rien n'est envoyé"); });
+      /* Sans id dans l'adresse, on envoie quand même avec le mail donné sur la page :
+         le script retrouve la bonne ligne grâce au mail. */
+      var mailConnu = "";
+      try { var c = JSON.parse(localStorage.getItem("ca-plan-contact") || "null"); if (c && c.mail) mailConnu = String(c.mail); } catch (e) {}
+      if (donnees && donnees.mail) mailConnu = String(donnees.mail);
+      if (!id && !mailConnu) {
+        quandPret(function(){ montrer("ni id dans l'adresse, ni mail donné", "rien n'est envoyé"); });
         return Promise.resolve(false);
       }
-      var corps = Object.assign({ id: id }, donnees || {}, { page: PAGE, date: new Date().toISOString() });
+      var corps = Object.assign({ id: id }, mailConnu ? { mail: mailConnu } : {}, donnees || {}, { page: PAGE, date: new Date().toISOString() });
       quandPret(function(){ montrer(corps, "envoi…"); });
       if (!/^https:\/\//.test(SHEET_URL)) {
         quandPret(function(){ montrer(corps, "✗ échec : l'URL du script n'est pas encore collée dans envoi.js"); });
